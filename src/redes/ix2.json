@@ -122,6 +122,7 @@
       "proto_ipv6": true,
       "city": "Palo Alto",
       "updated": "2016-06-08T15:55:16Z",
+      "policy_email": "servicesupport@equinix.com",
       "name": "Equinix Palo Alto",
       "tech_phone": "+1-866-811-8720",
       "country": "US",

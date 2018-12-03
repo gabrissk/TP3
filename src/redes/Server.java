@@ -11,10 +11,8 @@ import java.util.ArrayList;
 public class Server {
 
     private int port;
-    private File ixp;
-    private File net;
-    private File netixlan;
     private ArrayList<Long> ixps;
+    private String ixpJson;
 
     public Server(int port, String ixp, String net, String netixlan) throws IOException, ParseException {
         this.port = port;
@@ -27,24 +25,34 @@ public class Server {
             this.ixps.add((Long) data.get("id"));
         }
         System.out.println(this.ixps);
-        System.out.println(jsonObject.toJSONString());
-        System.out.println(array.toJSONString());
-        System.out.println(array.toString());
+        this.ixpJson = jsonObject.toJSONString();
+        /*System.out.println(jsonObject.toJSONString());
+        System.out.println(array.toJSONString());*/
 
     }
 
     public static void main(String args[]) throws IOException, ParseException {
 
         Server server = new Server(Integer.parseInt(args[0]), args[1], args[2], args[3]);
-        ServerSocket s = new ServerSocket(server.port);
-        Socket socket = s.accept();
 
-        BufferedReader inFromClient =
-                new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        DataOutputStream outToClient = new DataOutputStream(socket.getOutputStream());
-        String clientSentence = inFromClient.readLine();
-        System.out.println("Received: " + clientSentence);
+        ServerSocket serverSocket = new ServerSocket(server.port);
+        //serverSocket.setSoTimeout(10000);
+        while (true) {
+            System.out.println("Waiting for client on port " + serverSocket.getLocalPort() + "...");
 
+            Socket socket = serverSocket.accept();
+            System.out.println("Just connected to " + socket.getRemoteSocketAddress());
+
+            BufferedReader fromClient =
+                    new BufferedReader(
+                            new InputStreamReader(socket.getInputStream()));
+            PrintWriter toClient =
+                    new PrintWriter(socket.getOutputStream(), true);
+            String line = fromClient.readLine();
+            System.out.println("Server received: " + line);
+            toClient.println(server.ixpJson);
+            //toClient.flush();
+
+        }
     }
-
 }
