@@ -1,13 +1,23 @@
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 import java.io.*;
-import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class Client {
 
+    private ArrayList<Long> ixps;
 
+    public Client() {
+        this.ixps = new ArrayList<>();
+    }
 
+    public static void main(String args[]) throws IOException, ParseException {
 
-    public static void main(String args[]) throws IOException {
+        Client client = new Client();
 
         Socket socket = new Socket("0.0.0.0", Integer.parseInt(args[0]));
         System.out.println("Just connected to " + socket.getRemoteSocketAddress());
@@ -17,6 +27,11 @@ public class Client {
         toServer.println("GET /api/ix HTTP/1.1");
         String line = fromServer.readLine();
         System.out.println("Client received: " + line + " from Server");
+
+        readIXPS(client, line);
+
+        System.out.println(client.ixps);
+
         //toServer.flush();
 
         socket = new Socket("0.0.0.0", Integer.parseInt(args[0]));
@@ -30,5 +45,15 @@ public class Client {
         toServer.close();
         fromServer.close();
         socket.close();
+    }
+
+    private static void readIXPS(Client client, String line) throws ParseException {
+        JSONParser parser = new JSONParser();
+        JSONObject jsonObject = (JSONObject) parser.parse(line);
+        JSONArray array = (JSONArray) jsonObject.get("data");
+        for(Object obj: array) {
+            JSONObject data = (JSONObject) obj;
+            client.ixps.add((Long) data.get("id"));
+        }
     }
 }

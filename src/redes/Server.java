@@ -11,7 +11,6 @@ import java.util.ArrayList;
 public class Server {
 
     private int port;
-    private ArrayList<Long> ixps;
     private String ixpJson;
 
     public Server(int port, String ixp, String net, String netixlan) throws IOException, ParseException {
@@ -19,12 +18,12 @@ public class Server {
         JSONParser parser = new JSONParser();
         JSONObject jsonObject = (JSONObject) parser.parse(new FileReader(ixp));
         JSONArray array = (JSONArray) jsonObject.get("data");
-        this.ixps = new ArrayList<>();
+        ArrayList<Long> ixps = new ArrayList<>();
         for(Object obj: array) {
             JSONObject data = (JSONObject) obj;
-            this.ixps.add((Long) data.get("id"));
+            ixps.add((Long) data.get("id"));
         }
-        System.out.println(this.ixps);
+        System.out.println(ixps);
         this.ixpJson = jsonObject.toJSONString();
         /*System.out.println(jsonObject.toJSONString());
         System.out.println(array.toJSONString());*/
@@ -50,7 +49,12 @@ public class Server {
                     new PrintWriter(socket.getOutputStream(), true);
             String line = fromClient.readLine();
             System.out.println("Server received: " + line);
-            toClient.println(server.ixpJson);
+            String[] tokens = line.split(" ");
+            assert(tokens[0].equals("GET") && tokens[2].equals("HTTP/1.1"));
+            if(tokens[1].equals("/api/ix"))
+                toClient.println(server.ixpJson);
+            else
+                toClient.println(tokens[1] + " NOT IMPLEMENTED YET");
             //toClient.flush();
 
         }
