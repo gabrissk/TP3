@@ -6,6 +6,8 @@ import org.json.simple.parser.ParseException;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Client {
 
@@ -21,35 +23,9 @@ public class Client {
 
         Client client = new Client(Integer.parseInt(args[0]));
 
-        /*Socket socket = new Socket("0.0.0.0", Integer.parseInt(args[0]));
-        System.out.println("Just connected to " + socket.getRemoteSocketAddress());
-        PrintWriter toServer = new PrintWriter(socket.getOutputStream(),true);
-        BufferedReader fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-        toServer.println("GET /api/ix HTTP/1.1");
-        String line = fromServer.readLine();
-        System.out.println("Client received: " + line + " from Server");*/
-
         String line = sendGET(client.port, 0, null);
         System.out.println("Client received: " + line + " from Server");
         readIXPS(client, line);
-
-        //System.out.println(client.ixps);
-        /*for(IXP ixp:client.ixps) {
-            System.out.println(ixp.getId() + ": " + ixp.getName());
-        }
-*/
-        //toServer.flush();
-
-        line = sendGET(client.port, 1, (long) 13);
-        System.out.println(line);
-        /*socket = new Socket("0.0.0.0", Integer.parseInt(args[0]));
-        toServer = new PrintWriter(socket.getOutputStream(),true);
-        fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        toServer.println("GET /api/ixnets/31 HTTP/1.1");
-        //toServer.flush();
-        line = fromServer.readLine();
-        System.out.println("Client received: " + line + " from Server");*/
 
         /*toServer.close();
         fromServer.close();
@@ -65,8 +41,16 @@ public class Client {
             IXP ixp = new IXP((Long)data.get("id"), (String) data.get("name"));
             client.ixps.add(ixp);
             String response = sendGET(client.port, 1, ixp.getId());
-            System.out.println(ixp.getId()+ ": "+response);
+            List<String> n = processResponse(client, response);
+            System.out.println(ixp.getId()+ ": "+n+" size: "+ n.size());
         }
+    }
+
+    private static List<String> processResponse(Client client, String response) {
+        StringBuilder nets = new StringBuilder(response);
+        nets = nets.delete(0, 9).delete(nets.length()-2, nets.length());
+        List<String> n = Arrays.asList(nets.toString().split(","));
+        return n;
     }
 
 

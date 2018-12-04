@@ -90,7 +90,6 @@ public class Server {
             if(((Long) data.get("ix_id")).equals(id)) {
                 server.ixp_nets.get(id).add((Long) data.get("net_id"));
                 response.append(",").append(data.get("net_id"));
-                System.out.println("aqui");
             }
         }
         response.append("]}");
