@@ -16,7 +16,7 @@ public class Server {
     private String ixp_json;
     private String net_file;
     private String netixlan_file;
-    private HashMap<Long, HashSet<Long>> ixp_nets;
+    private HashMap<Integer, HashSet<Integer>> ixp_nets;
 
     public Server(int port, String ixp, String net_file, String netixlan_file) throws IOException, ParseException {
         this.port = port;
@@ -26,10 +26,10 @@ public class Server {
 
         JSONObject jsonObject = readJson(ixp);
         JSONArray array = (JSONArray) jsonObject.get("data");
-        ArrayList<Long> ixps = new ArrayList<>();
+        ArrayList<Integer> ixps = new ArrayList<>();
         for(Object obj: array) {
             JSONObject data = (JSONObject) obj;
-            ixps.add((Long) data.get("id"));
+            ixps.add(((Long)data.get("id")).intValue());
         }
         System.out.println(ixps);
         this.ixp_json = jsonObject.toJSONString();
@@ -46,7 +46,7 @@ public class Server {
             System.out.println("Waiting for client in port " + serverSocket.getLocalPort() + "...");
 
             Socket socket = serverSocket.accept();
-            System.out.println("Just connected to client");
+            //System.out.println("Just connected to client");
 
             BufferedReader fromClient =
                     new BufferedReader(
@@ -75,7 +75,7 @@ public class Server {
 
     private static String getIxpNets(Server server, JSONObject j, String token) {
         String[] tokens = token.split("/");
-        Long id = Long.parseLong(tokens[tokens.length-1]);
+        int id = Integer.parseInt(tokens[tokens.length-1]);
         //System.out.println("id:"+id);
         JSONArray array = (JSONArray) j.get("data");
         System.out.println(array);
@@ -87,8 +87,8 @@ public class Server {
         for(Object obj: array) {
             JSONObject data = (JSONObject) obj;
             //System.out.println("ix: " + data.get("ix_id")+ " net: "+data.get("net_id"));
-            if(((Long) data.get("ix_id")).equals(id)) {
-                server.ixp_nets.get(id).add((Long) data.get("net_id"));
+            if((((Long)data.get("ix_id")).intValue()) == id ) {
+                server.ixp_nets.get(id).add(((Long)data.get("net_id")).intValue());
                 response.append(",").append(data.get("net_id"));
             }
         }
