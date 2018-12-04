@@ -43,10 +43,10 @@ public class Server {
         ServerSocket serverSocket = new ServerSocket(server.port);
         //serverSocket.setSoTimeout(10000);
         while (true) {
-            System.out.println("Waiting for client on port " + serverSocket.getLocalPort() + "...");
+            System.out.println("Waiting for client in port " + serverSocket.getLocalPort() + "...");
 
             Socket socket = serverSocket.accept();
-            System.out.println("Just connected to " + socket.getRemoteSocketAddress());
+            System.out.println("Just connected to client");
 
             BufferedReader fromClient =
                     new BufferedReader(
@@ -60,7 +60,6 @@ public class Server {
             if(tokens[1].equals("/api/ix"))
                 toClient.println(server.ixp_json);
             else if(tokens[1].startsWith("/api/ixnets/")) {
-                // TODO: 04/12/18 pesquisar id e retornar lista de nets para esse ixp
                 JSONObject j = readJson(server.netixlan_file);
                 String response = getIxpNets(server, j, tokens[1]);
                 System.out.println(response);
