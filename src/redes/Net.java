@@ -2,16 +2,39 @@ import java.util.ArrayList;
 
 public class Net {
 
-    private Long id;
+    private int id;
     private String name;
-    private Long ixp_count;
-    private ArrayList<Long> ixps;
+    private int ixp_count;
+    private ArrayList<Integer> ixps;
 
 
-    public Net(Long id) {
+    public Net(int id) {
         this.id = id;
-        this.ixp_count = Long.valueOf(0);
+        this.ixp_count = 0;
         this.ixps = new ArrayList<>();
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getIxp_count() {
+        return ixp_count;
+    }
+
+    public ArrayList<Integer> getIxps() {
+        return ixps;
+    }
+
+    public void setIxp_count(int ixp_count) {
+        this.ixp_count = ixp_count;
+    }
+
+    public void setIxps(ArrayList<Integer> ixps) {
+        this.ixps = ixps;
+    }
 }

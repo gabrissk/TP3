@@ -5,35 +5,71 @@ import org.json.simple.parser.ParseException;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 
 public class Client {
 
     private ArrayList<IXP> ixps;
+    private ArrayList<Net> nets;
     private int port;
+    private HashSet<Integer> netSet;
 
     private Client(int port) {
         this.ixps = new ArrayList<>();
+        this.nets = new ArrayList<>();
         this.port = port;
+        this.netSet = new HashSet<>();
     }
 
     public static void main(String args[]) throws IOException, ParseException {
 
         Client client = new Client(Integer.parseInt(args[0]));
 
-        if(Integer.parseInt(args[1]) == 1) {
-            String line = sendGET(client.port, 0, -1);
-            //System.out.println("Client received: " + line + " from Server");
-            readIXPS(client, line);
+        String line = sendGET(client.port, 0, -1);
+        readIXPS(client, line);
 
-            analyzeIXP(client);
-
+        if(Integer.parseInt(args[1]) == 0) {
+            setNets(client);
+            analyzeNets(client);
         }
 
-        /*toServer.close();
-        fromServer.close();
-        socket.close();*/
+        if(Integer.parseInt(args[1]) == 1) {
+            analyzeIXP(client);
+        }
+        System.out.println(client.netSet+ " size: " + client.netSet.size());
+        //analyzeIXP(client);
+        /*int s =0;
+        for (Net net: client.nets) {
+            System.out.println(net.getId()+ ": "+net.getIxps());
+            s+= net.getIxps().size();
+        }
+        System.out.println(s);*/
+
+    }
+
+    private static void setNets(Client client) {
+        for(int i: client.netSet) {
+            Net net = new Net(i);
+            client.nets.add(net);
+        }
+    }
+
+    private static void analyzeNets(Client client) {
+        int c=0; int s=0;
+        Collections.sort(client.nets, (o1, o2) -> {
+            if(o1.getId()==o2.getId()) return 0;
+            return o1.getId() > o1.getId() ? -1:1 ;
+        });
+        for(Net net: client.nets) {
+            for(IXP ixp: client.ixps) {
+                if(ixp.getNets().contains(String.valueOf(net.getId()))) {
+                    net.getIxps().add(ixp.getId());
+                }
+            }
+            net.setIxp_count(net.getIxps().size());
+            printOutput0(net);
+        }
+
     }
 
     private static void analyzeIXP(Client client) {
@@ -41,8 +77,7 @@ public class Client {
         for(IXP ixp : client.ixps) {
             if(ixp.getNets().get(0).equals("")) ixp.setNet_count(0);
             else ixp.setNet_count(ixp.getNets().size());
-            //System.out.println(ixp.getId()+ ": "+ixp.getName()+" "+ ixp.getNets()+ " "+ixp.getNet_count());
-            printOutput(ixp);
+            printOutput1(ixp);
             c++;
             s+= ixp.getNet_count();
         }
@@ -57,15 +92,22 @@ public class Client {
             JSONObject data = (JSONObject) obj;
             IXP ixp = new IXP(((Long)data.get("id")).intValue(), (String) data.get("name"));
             String response = sendGET(client.port, 1, ixp.getId());
-            processResponse(ixp, response);
+            processResponse(ixp, response, client.netSet);
             client.ixps.add(ixp);
         }
     }
 
-    private static void processResponse(IXP ixp, String response) {
+    private static void processResponse(IXP ixp, String response, HashSet<Integer> set) {
         StringBuilder nets = new StringBuilder(response);
         nets = nets.delete(0, 9).delete(nets.length()-2, nets.length());
-        ixp.setNets(Arrays.asList(nets.toString().split(",")));
+        ixp.setNets(Arrays.asList(nets.toString().split(", ")));
+        addNet(ixp, set);
+
+    }
+
+    private static void addNet(IXP ixp, HashSet<Integer> set) {
+        if(!ixp.getNets().get(0).equals(""))
+            ixp.getNets().forEach(p -> set.add(Integer.valueOf(p)));
     }
 
 
@@ -87,8 +129,12 @@ public class Client {
         return fromServer.readLine();
     }
 
-    private static void printOutput(IXP ixp) {
-        System.out.println(ixp.getId()+"\t"+ixp.getName()+"\t"+ixp.getNet_count());
+    private static void printOutput0(Net net) {
+        System.out.println(net.getId()+"\t"+net.getName()+"\t"+net.getIxp_count());
+    }
+
+    private static void printOutput1(IXP ixp) {
+        System.out.println(ixp.getId()+"\t"+ixp.getName()+"\t"+ixp.getNet_count()+"\t"+ixp.getNets());
     }
 
 
