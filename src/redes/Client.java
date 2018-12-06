@@ -39,13 +39,6 @@ public class Client {
             analyzeIXP(client);
         }
         System.out.println(client.netSet+ " size: " + client.netSet.size());
-        //analyzeIXP(client);
-        /*int s =0;
-        for (Net net: client.nets) {
-            System.out.println(net.getId()+ ": "+net.getIxps());
-            s+= net.getIxps().size();
-        }
-        System.out.println(s);*/
 
     }
 
@@ -68,7 +61,6 @@ public class Client {
             net.setIxp_count(net.getIxps().size());
             printOutput0(net);
         }
-
     }
 
     private static void getNetName(Net net, int port) throws IOException {
@@ -142,6 +134,5 @@ public class Client {
     private static void printOutput1(IXP ixp) {
         System.out.println(ixp.getId()+"\t"+ixp.getName()+"\t"+ixp.getNet_count());
     }
-
 
 }

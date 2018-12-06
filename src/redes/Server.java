@@ -43,44 +43,39 @@ public class Server {
         Server server = new Server(Integer.parseInt(args[0]), args[1], args[2], args[3]);
 
         ServerSocket serverSocket = new ServerSocket(server.port);
-        //serverSocket.setSoTimeout(10000);
         while (true) {
             System.out.println("Waiting for client in port " + serverSocket.getLocalPort() + "...");
             Socket socket = serverSocket.accept();
-            BufferedReader fromClient =
-                    new BufferedReader(
-                            new InputStreamReader(socket.getInputStream()));
-            PrintWriter toClient =
-                    new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader fromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter toClient = new PrintWriter(socket.getOutputStream(), true);
+
             String line = fromClient.readLine();
             System.out.println("Server received: " + line);
             String[] tokens = line.split(" ");
+
             assert(tokens[0].equals("GET") && tokens[2].equals("HTTP/1.1"));
+
             if(tokens[1].equals("/api/ix"))
                 toClient.println(server.ixp_json);
+
             else if(tokens[1].startsWith("/api/ixnets/")) {
                 JSONObject j = readJson(server.netixlan_file);
                 String response = getIxpNets(server, j, tokens[1]);
-                //System.out.println(response);
                 toClient.println(response);
             }
+
             else if(tokens[1].startsWith("/api/netname/")) {
                 JSONObject j = readJson(server.net_file);
-                String response = getNetName(server, j, tokens[1]);
-                //System.out.println(response);
+                String response = getNetName(j, tokens[1]);
                 toClient.println(response);
             }
-            //toClient.flush();
-
         }
-
     }
 
-    private static String getNetName(Server server, JSONObject j, String token) {
+    private static String getNetName(JSONObject j, String token) {
         String[] tokens = token.split("/");
         int id = Integer.parseInt(tokens[tokens.length-1]);
         JSONArray array = (JSONArray) j.get("data");
-        //System.out.println(array);
 
         String response = null;
 
@@ -91,7 +86,6 @@ public class Server {
                 break;
             }
         }
-
         return response;
     }
 
@@ -99,7 +93,6 @@ public class Server {
         String[] tokens = token.split("/");
         int id = Integer.parseInt(tokens[tokens.length-1]);
         JSONArray array = (JSONArray) j.get("data");
-        //System.out.println(array);
 
         server.ixp_nets.put(id, new HashSet<>());
 
@@ -109,11 +102,8 @@ public class Server {
                 server.ixp_nets.get(id).add(((Long)data.get("net_id")).intValue());
             }
         }
-        //System.out.println(server.ixp_nets.get(id));
-
         return "{\"data\":" + server.ixp_nets.get(id) + "}";
     }
-
 
     private static JSONObject readJson(String file) throws IOException, ParseException {
             JSONParser parser = new JSONParser();
