@@ -1,3 +1,7 @@
+/*By: Gabriel Morais
+  2018
+ */
+
 package redes;
 
 import java.util.ArrayList;
@@ -8,7 +12,6 @@ public class Net {
     private String name;
     private int ixp_count;
     private ArrayList<Integer> ixps;
-
 
     public Net(int id) {
         this.id = id;
