@@ -1,3 +1,5 @@
+package redes;
+
 import java.util.ArrayList;
 
 public class Net {
@@ -20,6 +22,10 @@ public class Net {
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public int getIxp_count() {

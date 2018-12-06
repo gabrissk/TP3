@@ -1,3 +1,5 @@
+package redes;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -12,13 +14,13 @@ public class Client {
     private ArrayList<IXP> ixps;
     private ArrayList<Net> nets;
     private int port;
-    private HashSet<Integer> netSet;
+    private TreeSet<Integer> netSet;
 
     private Client(int port) {
         this.ixps = new ArrayList<>();
         this.nets = new ArrayList<>();
         this.port = port;
-        this.netSet = new HashSet<>();
+        this.netSet = new TreeSet<>();
     }
 
     public static void main(String args[]) throws IOException, ParseException {
@@ -54,22 +56,23 @@ public class Client {
         }
     }
 
-    private static void analyzeNets(Client client) {
+    private static void analyzeNets(Client client) throws IOException {
         int c=0; int s=0;
-        Collections.sort(client.nets, (o1, o2) -> {
-            if(o1.getId()==o2.getId()) return 0;
-            return o1.getId() > o1.getId() ? -1:1 ;
-        });
         for(Net net: client.nets) {
             for(IXP ixp: client.ixps) {
                 if(ixp.getNets().contains(String.valueOf(net.getId()))) {
                     net.getIxps().add(ixp.getId());
                 }
             }
+            getNetName(net, client.port);
             net.setIxp_count(net.getIxps().size());
             printOutput0(net);
         }
 
+    }
+
+    private static void getNetName(Net net, int port) throws IOException {
+        net.setName(sendGET(port, 2, net.getId()));
     }
 
     private static void analyzeIXP(Client client) {
@@ -97,7 +100,7 @@ public class Client {
         }
     }
 
-    private static void processResponse(IXP ixp, String response, HashSet<Integer> set) {
+    private static void processResponse(IXP ixp, String response, TreeSet<Integer> set) {
         StringBuilder nets = new StringBuilder(response);
         nets = nets.delete(0, 9).delete(nets.length()-2, nets.length());
         ixp.setNets(Arrays.asList(nets.toString().split(", ")));
@@ -105,7 +108,7 @@ public class Client {
 
     }
 
-    private static void addNet(IXP ixp, HashSet<Integer> set) {
+    private static void addNet(IXP ixp, TreeSet<Integer> set) {
         if(!ixp.getNets().get(0).equals(""))
             ixp.getNets().forEach(p -> set.add(Integer.valueOf(p)));
     }
@@ -114,7 +117,6 @@ public class Client {
     private static String sendGET(int port, int endpoint, int id) throws IOException { // 0: api/ix | 1: api/ixnets{id} | 2: api/netname{id}
 
         Socket socket = new Socket("0.0.0.0", Integer.parseInt(String.valueOf(port)));
-        //System.out.println("Just connected to server");
         PrintWriter toServer = new PrintWriter(socket.getOutputStream(),true);
         BufferedReader fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
@@ -126,6 +128,10 @@ public class Client {
             toServer.println("GET /api/ixnets/" +id+ " HTTP/1.1");
         }
 
+        else if(endpoint == 2) {
+            toServer.println("GET /api/netname/" +id+ " HTTP/1.1");
+        }
+
         return fromServer.readLine();
     }
 
@@ -134,7 +140,7 @@ public class Client {
     }
 
     private static void printOutput1(IXP ixp) {
-        System.out.println(ixp.getId()+"\t"+ixp.getName()+"\t"+ixp.getNet_count()+"\t"+ixp.getNets());
+        System.out.println(ixp.getId()+"\t"+ixp.getName()+"\t"+ixp.getNet_count());
     }
 
 

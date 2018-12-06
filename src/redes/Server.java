@@ -1,3 +1,5 @@
+package redes;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -44,10 +46,7 @@ public class Server {
         //serverSocket.setSoTimeout(10000);
         while (true) {
             System.out.println("Waiting for client in port " + serverSocket.getLocalPort() + "...");
-
             Socket socket = serverSocket.accept();
-            //System.out.println("Just connected to client");
-
             BufferedReader fromClient =
                     new BufferedReader(
                             new InputStreamReader(socket.getInputStream()));
@@ -62,10 +61,14 @@ public class Server {
             else if(tokens[1].startsWith("/api/ixnets/")) {
                 JSONObject j = readJson(server.netixlan_file);
                 String response = getIxpNets(server, j, tokens[1]);
-                System.out.println(response);
+                //System.out.println(response);
                 toClient.println(response);
-
-
+            }
+            else if(tokens[1].startsWith("/api/netname/")) {
+                JSONObject j = readJson(server.net_file);
+                String response = getNetName(server, j, tokens[1]);
+                //System.out.println(response);
+                toClient.println(response);
             }
             //toClient.flush();
 
@@ -73,31 +76,40 @@ public class Server {
 
     }
 
+    private static String getNetName(Server server, JSONObject j, String token) {
+        String[] tokens = token.split("/");
+        int id = Integer.parseInt(tokens[tokens.length-1]);
+        JSONArray array = (JSONArray) j.get("data");
+        //System.out.println(array);
+
+        String response = null;
+
+        for(Object obj: array) {
+            JSONObject data = (JSONObject) obj;
+            if((((Long)data.get("id")).intValue()) == id ) {
+                response = (String)data.get("name");
+                break;
+            }
+        }
+
+        return response;
+    }
+
     private static String getIxpNets(Server server, JSONObject j, String token) {
         String[] tokens = token.split("/");
         int id = Integer.parseInt(tokens[tokens.length-1]);
-        //System.out.println("id:"+id);
         JSONArray array = (JSONArray) j.get("data");
-        System.out.println(array);
-        StringBuilder response = new StringBuilder("{\"data\":[");
+        //System.out.println(array);
 
         server.ixp_nets.put(id, new HashSet<>());
 
-        //ArrayList<Long> regs = new ArrayList<>();
         for(Object obj: array) {
             JSONObject data = (JSONObject) obj;
-            //System.out.println("ix: " + data.get("ix_id")+ " net: "+data.get("net_id"));
             if((((Long)data.get("ix_id")).intValue()) == id ) {
                 server.ixp_nets.get(id).add(((Long)data.get("net_id")).intValue());
-                response.append(",").append(data.get("net_id"));
             }
         }
-        response.append("]}");
-        System.out.println(server.ixp_nets.get(id));
-        /*if(response.length() > 9)
-            response.delete(response.length()-1, response.length());*/
-
-
+        //System.out.println(server.ixp_nets.get(id));
 
         return "{\"data\":" + server.ixp_nets.get(id) + "}";
     }
